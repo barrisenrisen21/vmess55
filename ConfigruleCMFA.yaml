@@ -1,0 +1,189 @@
+port: 7890
+socks-port: 7891
+redir-port: 7892
+mixed-port: 7893
+tproxy-port: 7895
+ipv6: false
+mode: rule
+log-level: silent
+allow-lan: true
+external-controller: 0.0.0.0:9090
+secret: ""
+bind-address: "*"
+unified-delay: true
+profile:
+  store-selected: true
+dns:
+  enable: true
+  ipv6: false
+  enhanced-mode: redir-host
+  listen: 0.0.0.0:7874
+  nameserver:
+    - 8.8.8.8
+    - 1.0.0.1
+    - https://dns.google/dns-query
+  fallback:
+    - 1.1.1.1
+    - 8.8.4.4
+    - https://cloudflare-dns.com/dns-query
+    - 112.215.203.254
+  default-nameserver:
+    - 8.8.8.8
+    - 1.1.1.1
+    - 112.215.203.254
+proxies:
+  - name: Napi
+    server: 104.26.7.171
+    port: 80
+    type: vmess
+    uuid: 04845960-e3fe-11ef-b235-205c6d5f5d78
+    alterId: 0
+    cipher: auto
+    tls: false
+    skip-cert-verify: true
+    servername: eu-2.hihu.net
+    network: ws
+    ws-opts:
+      path: /196l3vn7
+      headers:
+        Host: eu-2.hihu.net
+    udp: true
+  - name: Baput
+    server: 104.26.7.171
+    port: 80
+    type: vmess
+    uuid: 2e40f170-e3fd-11ef-b835-205c6d5f5d78
+    alterId: 0
+    cipher: auto
+    tls: false
+    skip-cert-verify: true
+    servername: sg-1.hihu.net
+    network: ws
+    ws-opts:
+      path: /o4sjmln0
+      headers:
+        Host: sg-1.hihu.net
+    udp: true
+  - name: Bapyu
+    server: 104.26.7.171
+    port: 80
+    type: vmess
+    uuid: 9724a7b0-e3fd-11ef-b231-205c6d5f5d78
+    alterId: 0
+    cipher: auto
+    tls: false
+    skip-cert-verify: true
+    servername: us-23.hihu.net
+    network: ws
+    ws-opts:
+      path: /eiw2k4pu
+      headers:
+        Host: us-23.hihu.net
+    udp: true
+  - name: Dono
+    server: 104.26.7.171
+    port: 80
+    type: vmess
+    uuid: c53ed730-e3fd-11ef-b537-205c6d5f5d78
+    alterId: 0
+    cipher: auto
+    tls: false
+    skip-cert-verify: true
+    servername:  us-21.hihu.net
+    network: ws
+    ws-opts:
+      path: /sm64cw7d
+      headers:
+        Host:  us-21.hihu.net
+    udp: true
+
+proxy-groups:
+  - name: ID-X
+    type: fallback
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    proxies:
+      - Napi
+      - Baput
+      - Bapyu
+      - Dono
+
+  - name: MIX-X
+    type: fallback
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    proxies:
+      - Napi
+      - Baput
+      - Bapyu
+      - Dono
+      
+  - name: IKLAN
+    type: select
+    proxies:
+     - MIX-X
+     - REJECT
+
+  - name: GAME
+    type: select
+    proxies:
+     - ID-X
+     - DIRECT
+     - REJECT
+
+rules:
+ - IP-CIDR,198.18.0.1/16,REJECT,no-resolve
+ - RULE-SET,Block,IKLAN
+ - RULE-SET,Game,GAME
+ - RULE-SET,Umum,MIX-X
+ - RULE-SET,indo,ID-X
+ - RULE-SET,Sosmed,MIX-X
+ - RULE-SET,Streaming,MIX-X
+ - RULE-SET,Bankid,ID-X
+ - RULE-SET,Tiktok,MIX-X
+ - RULE-SET,Meta,MIX-X
+ - RULE-SET,PortGame,GAME
+ - MATCH,MIX-X
+
+
+rule-providers:
+  Game:
+    type: file
+    behavior: classical
+    path: ./game.yaml 
+  PortGame:
+    type: file
+    behavior: classical
+    path: ./portgame.yaml
+  Umum:
+    type: file
+    behavior: classical
+    path: ./umum.yaml 
+  indo:
+    type: file
+    behavior: classical
+    path: ./indo.yaml
+  Sosmed:
+    type: file
+    behavior: classical
+    path: ./sosmed.yaml
+  Streaming:
+    type: file
+    behavior: classical
+    path: ./streaming.yaml
+  Bankid:
+    type: file
+    behavior: domain
+    path: ./bankid.yaml
+  Tiktok:
+    type: file
+    behavior: domain
+    path: ./tiktok.yaml
+  Meta:
+    type: file
+    behavior: domain
+    path: ./meta.yaml
+  Block:
+    type: file
+    behavior: domain
+    path: ./block.yaml  
